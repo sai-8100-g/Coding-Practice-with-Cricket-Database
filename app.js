@@ -22,13 +22,26 @@ const initializer = async () => {
 
 initializer()
 
+function converToRequiredFormat(data) {
+  return {
+    playerId: data.player_id,
+    playerName: data.player_name,
+    jerseyName: data.jersey_name,
+    role: data.role,
+  }
+}
+
 app.get('/players/', async (request, response) => {
   const getAllPlayersQuery = `SELECT 
                                  *
                                  FROM
                                  cricket_team;`
   const result = await db.all(getAllPlayersQuery)
-  response.send(result)
+  response.send(
+    result.map(eachObj => {
+      converToRequiredFormat(eachObj)
+    }),
+  )
 })
 
 app.post('/players/', async (request, response) => {
@@ -46,7 +59,11 @@ app.get('/players/:playerId', async (request, response) => {
   const {playerId} = request.params
   const query = `SELECT * FROM cricket_team WHERE player_id = ${playerId};`
   const result = await db.get(query)
-  response.send(result)
+  response.send(
+    result.map(eachObj => {
+      converToRequiredFormat(eachObj)
+    }),
+  )
 })
 
 app.put('/players/:playerId/', async (request, response) => {
@@ -71,3 +88,5 @@ app.delete('/players/:playerId', async (request, response) => {
   await db.run(query)
   response.send('Player Removed')
 })
+
+module.exports = app
