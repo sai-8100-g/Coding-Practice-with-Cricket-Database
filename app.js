@@ -32,7 +32,6 @@ app.get('/players/', async (request, response) => {
 })
 
 app.post('/players/', async (request, response) => {
-  const postingDetails = request.body
   const {playerName, jerseyNumber, role} = request.body
 
   const postingQuery = `INSERT INTO cricket_team (player_name, jersey_number, role)
@@ -40,5 +39,5 @@ app.post('/players/', async (request, response) => {
 
   const dbResponse = await db.run(postingQuery)
   const id = dbResponse.lastID
-  response.send(id)
+  response.send(`Player Added to Team`)
 })
