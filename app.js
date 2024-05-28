@@ -5,6 +5,7 @@ const {open} = require('sqlite')
 const sqlite3 = require('sqlite3')
 
 const app = express()
+app.use(express.json())
 let db = null
 
 const initializer = async () => {
@@ -21,7 +22,7 @@ const initializer = async () => {
 
 initializer()
 
-app.get('/players', async (request, response) => {
+app.get('/players/', async (request, response) => {
   const getAllPlayersQuery = `SELECT 
                                  *
                                  FROM
@@ -30,11 +31,11 @@ app.get('/players', async (request, response) => {
   response.send(result)
 })
 
-app.post('/players', async (request, response) => {
+app.post('/players/', async (request, response) => {
   const postingDetails = request.body
   const {playerName, jerseyNumber, role} = request.body
 
-  const postingQuery = `INSERT INTO cricket_team (playerName, jerseyNumber, role)
+  const postingQuery = `INSERT INTO cricket_team (player_name, jersey_number, role)
                             VALUES (${playerName}, ${jerseyNumber}, ${role});`
 
   const dbResponse = await db.run(postingQuery)
