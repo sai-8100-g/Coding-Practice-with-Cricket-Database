@@ -17,19 +17,11 @@ const initializer = async () => {
     app.listen(3000)
   } catch (e) {
     console.log(`DB error: ${e.message}`)
+    process.exit(1)
   }
 }
 
 initializer()
-
-function converToRequiredFormat(data) {
-  return {
-    playerId: data.player_id,
-    playerName: data.player_name,
-    jerseyName: data.jersey_name,
-    role: data.role,
-  }
-}
 
 app.get('/players/', async (request, response) => {
   const getAllPlayersQuery = `SELECT 
@@ -39,7 +31,12 @@ app.get('/players/', async (request, response) => {
   const result = await db.all(getAllPlayersQuery)
   response.send(
     result.map(eachObj => {
-      converToRequiredFormat(eachObj)
+      return {
+        playerId: eachObj.player_id,
+        playerName: eachObj.player_name,
+        jerseyNumber: eachObj.jersey_number,
+        role: eachObj.role,
+      }
     }),
   )
 })
@@ -48,21 +45,31 @@ app.post('/players/', async (request, response) => {
   const {playerName, jerseyNumber, role} = request.body
 
   const query = `INSERT INTO cricket_team (player_name, jersey_number, role)
-                            VALUES (${playerName}, ${jerseyNumber}, ${role});`
+                            VALUES ('${playerName}', '${jerseyNumber}', '${role}');`
 
   await db.run(query)
   response.send('Player Added to Team')
 })
 
-app.get('/players/:playerId', async (request, response) => {
+app.get('/players/:playerId/', async (request, response) => {
   const {playerId} = request.params
-  const query = `SELECT * FROM cricket_team WHERE player_id = ${playerId};`
+  const query = `
+  SELECT 
+  *
+  FROM
+  cricket_team
+  WHERE
+  player_id = '${playerId}';
+  `
   const result = await db.get(query)
-  response.send(
-    result.map(eachObj => {
-      converToRequiredFormat(eachObj)
-    }),
-  )
+
+  console.log(result)
+  response.send({
+    playerId: result.player_id,
+    playerName: result.player_name,
+    jerseyNumber: result.jersey_number,
+    role: result.role,
+  })
 })
 
 app.put('/players/:playerId/', async (request, response) => {
@@ -71,11 +78,11 @@ app.put('/players/:playerId/', async (request, response) => {
   const query = `UPDATE 
                     cricket_team
                   SET 
-                  player_name=${playerName},
-                  jersey_name=${jerseyNumber},
-                  role=${role}
+                  player_name='${playerName}',
+                  jersey_number='${jerseyNumber}',
+                  role='${role}'
                   WHERE 
-                  player_id=${playerId};`
+                  player_id='${playerId}';`
 
   await db.run(query)
   response.send('Player Details Updated')
